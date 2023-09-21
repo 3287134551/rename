@@ -3,6 +3,7 @@ from PySide6.QtWidgets import QApplication, QWidget
 from PySide6.QtGui import QPixmap, Qt
 from Ui_untitled import Ui_Form
 
+
 class UI(QWidget, Ui_Form):
     def __init__(self):
         super().__init__()
@@ -27,7 +28,7 @@ class UI(QWidget, Ui_Form):
         self.slider_value = 0
         
         # lineEdit_3
-        self.lineEdit_3.returnPressed.connect(self.deleteCurrentImage)
+        self.lineEdit_3.returnPressed.connect(self.saveCurrentImage)
         self.lineEdit.textChanged.connect(self.loadDirectoryImg)
         self.horizontalSlider.setMinimum(0)
         self.horizontalSlider.setMaximum(2000)
@@ -65,24 +66,23 @@ class UI(QWidget, Ui_Form):
             scaled_pixmap = self.pixmap.scaled(self.slider_value, self.slider_value, Qt.AspectRatioMode.KeepAspectRatio)
             self.label_3.setPixmap(scaled_pixmap)
             
-            index = file_name.index("_") if "_" in file_name else len(file_name)
-            self.lineEdit_3.setText(file_name)
-            self.lineEdit_3.setCursorPosition(index)
+            self.lineEdit_3.setText(file_name)  # 设置完整文件名
+            self.lineEdit_3.setCursorPosition(self.lineEdit_3.text().index('_'))
 
             self.index = (self.index + 1) % len(file_names)
 
-    def deleteCurrentImage(self):
+    def saveCurrentImage(self):
         file_names = self.file_names
         if file_names:
             file_name = file_names[self.index - 1]
-            image_path = os.path.join(self.lineEdit.text(), file_name)
+            new_file_name = self.lineEdit_3.text() # 保持后缀名不变
             
-            # 根据保存目录的路径保存图片
-            save_image_path = os.path.join(self.save_directory, file_name)
-            self.pixmap.save(save_image_path)
+            # 获取原始图片路径和新图片路径
+            source_image_path = os.path.join(self.lineEdit.text(), file_name)
+            target_image_path = os.path.join(self.save_directory, new_file_name)
             
-            # 删除原始图片
-            os.remove(image_path)
+            # 更改文件名
+            os.rename(source_image_path, target_image_path)
             
             # 更新剩余数量并显示
             self.lcd_count -= 1
